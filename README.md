@@ -28,4 +28,26 @@ Need to build logic gates/chip:
 
 All chips are written using hdl and unit tested using the test scripts available in this course.
 
+---
+### Project 02
+---
 
+Need to build chips:
+* Add16
+* ALU
+* FullAdder
+* HalfAdder
+* Inc
+--- 
+Project 03
+---
+
+Need to build chips:
+* Bit
+* Program Counter
+* RAM64
+* RAM8
+* Register(16bit)
+* RAM512
+* RAM4K
+* RAM16K
