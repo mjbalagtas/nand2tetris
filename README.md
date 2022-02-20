@@ -38,6 +38,8 @@ Need to build chips:
 * FullAdder
 * HalfAdder
 * Inc
+
+All chips are written using hdl and unit tested using the test scripts available in this course.
 --- 
 Project 03
 ---
@@ -51,3 +53,5 @@ Need to build chips:
 * RAM512
 * RAM4K
 * RAM16K
+
+All chips are written using hdl and unit tested using the test scripts available in this course.
