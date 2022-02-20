@@ -5,26 +5,26 @@ Starting from project 01,need to build a set of elementary logic gates and compl
 
 ---
 ### More specific details about each project
-
+---
 ### Project 01
 ---
 
 Need to build logic gates/chip:
-*And16
-*And
-*DMux
-*DMux4Way
-*DMux8Way
-*Mux
-*Mux4Way16
-*Mux8Way16
-*Mux16
-*Not
-*Not16
-*Or
-*Or8Way
-*Or16
-*Xor
+* And16
+* And
+* DMux
+* DMux4Way
+* DMux8Way
+* Mux
+* Mux4Way16
+* Mux8Way16
+* Mux16
+* Not
+* Not16
+* Or
+* Or8Way
+* Or16
+* Xor
 
 All chips are written using hdl and unit tested using the test scripts available in this course.
 
