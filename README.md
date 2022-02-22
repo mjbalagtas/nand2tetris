@@ -8,50 +8,18 @@ Starting from project 01,need to build a set of elementary logic gates and compl
 ---
 ### Project 01
 ---
-
-Need to build logic gates/chip:
-* And16
-* And
-* DMux
-* DMux4Way
-* DMux8Way
-* Mux
-* Mux4Way16
-* Mux8Way16
-* Mux16
-* Not
-* Not16
-* Or
-* Or8Way
-* Or16
-* Xor
-
-All chips are written using hdl and unit tested using the test scripts available in this course.
-
+Built both elementary logic gates and complex logic gates, that can be used later on other projects.
 ---
 ### Project 02
 ---
-
-Need to build chips:
-* Add16
-* ALU
-* FullAdder
-* HalfAdder
-* Inc
-
-All chips are written using hdl and unit tested using the test scripts available in this course.
+Built half-adder, full-adder and ALU.
 --- 
-Project 03
+### Project 03
 ---
-
-Need to build chips:
-* Bit
-* Program Counter
-* RAM64
-* RAM8
-* Register(16bit)
-* RAM512
-* RAM4K
-* RAM16K
-
-All chips are written using hdl and unit tested using the test scripts available in this course.
+Built Bit, to 16-bit Register, to RAM up to 8K RAM. Also built a Program Counter.
+---
+### Project 04
+---
+Program the multiply logic, that stores the product of two numbers inside the Memory.
+Also, programmed the screen and keyboard I/O logic. Whenever a button is pressed in the keyboard, the screen is black, and white when no button is pressed. All programs are coded using the Hack machine language.
+---
