@@ -39,5 +39,52 @@ CHIP CPU {
         pc[15];          // address of next instruction
 
     PARTS:
-    // Put your code here:
+
+    //instruction[0] = jg   jump-greater
+    //instruction[1] = je   jump-equal
+    //instruction[2] = jl   jump-less
+    //instruction[3] = dm   store to M
+    //instruction[4] = dd   store to Dregister
+    //instruction[5] = da   store to Aregister
+    //instruction[6..11] = ALU control input pins
+    //instruction[12] = (if == 1) choose inM else choose Aregister
+    //instruction[15] = opcode (if == 1 ) c-instruction else a-instruction
+
+    DMux(in=true, sel=instruction[15], a=atype, b=ctype);
+
+    Mux16(a=instruction, b=aluout, sel=ctype, out=aregin);
+
+    Or(a=atype, b=instruction[5], out=loada);
+    ARegister(in=aregin, load=loada, out=inA, out[0..14]=addressM);
+
+    Mux16(a=inA, b=inM, sel=instruction[12], out=y);
+
+    And(a=ctype, b=instruction[4], out=loadd);
+    DRegister(in=aluout, load=loadd, out=x);
+
+    ALU(x=x, y=y, zx=instruction[11], nx=instruction[10], zy=instruction[9], ny=instruction[8], 
+    f=instruction[7], no=instruction[6], out=aluout, zr=zr, ng=ng);
+
+    And(a=ctype, b=instruction[3], out=writeM, out=selM);
+
+    Mux16(a=false, b=aluout, sel=selM, out=outM);
+
+    Not(in=zr, out=notzr);
+    Not(in=ng, out=ps);
+    And(a=ps, b=notzr, out=gr);
+
+    And(a=ctype, b=instruction[0], out=prej1);
+    And(a=ctype, b=instruction[1], out=prej2);
+    And(a=ctype, b=instruction[2], out=prej3);
+
+    And(a=gr, b=prej1, out=jump1);
+    And(a=zr, b=prej2, out=jump2);
+    And(a=ng, b=prej3, out=jump3);
+
+    Or(a=jump1, b=jump2, out=tempjump);
+    Or(a=tempjump, b=jump3, out=jump);
+
+    Not(in=jump, out=inc);
+
+    PC(in=inA, load=jump, inc=inc, reset=reset, out[0..14]=pc);
 }
