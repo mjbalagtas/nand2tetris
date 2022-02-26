@@ -38,7 +38,7 @@
 
     @KBD
     D=M
-    @LOOP_BLACK
+    @LOOP_WHITE
         D;JEQ
 
     @KBD
