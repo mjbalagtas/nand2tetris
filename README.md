@@ -31,3 +31,35 @@ Also, programmed the screen and keyboard I/O logic. Whenever a button is pressed
 ### Project 05
 
 Built the CPU and Memory. Then, with a built-in ROM32K, connected them together to build a working computer.
+
+---
+### Project 06
+
+## Short description:
+* A program that generates a machine code (.hack filetype) given an assembly file type(.asm)
+
+### Install java and jdk
+### Must have .asm file to test
+
+### Instructions on how to use program:(Assembler.java) 
+1. go to command line.
+2. go to "nand2tetris/projects/06/assembler" directory.
+2. Compile all the .java files using the command "javac Code.java Parser.java Symbol.java Assembler.java"
+3. Run the Assembler.java file using the command "java Assembler <.asm filename>"
+4. A .hack filetype with the same name as the .asm file will be generated to the same directory.
+
+---
+### Project 07
+## Short description:
+* A program that generates an assembly file type(.asm) given a virtual machine file type(.vm)
+* Note: This is part 1 of the project VMTranslator. Project 7 & 8 focuses on building the VMTranslator.
+
+## Install java and jdk
+## Must have .vm file to test
+
+### Instructions on how to use program:(VMTranslator.java) 
+1. go to command line.
+2. go to "nand2tetris/projects/07" directory.
+2. Compile all the .java files using the command "javac CodeWriter.java Command.java CommandType.java Init.java Parser.java VMTranslator.java"
+3. Run the VMTranslator.java file using the command "java VMTranslator <.asm filename>"
+4. A .asm filetype with the same name as the .vm file will be generated to the same directory.
