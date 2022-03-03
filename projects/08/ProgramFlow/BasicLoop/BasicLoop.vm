@@ -13,7 +13,7 @@ push argument 0
 push local 0
 add
 pop local 0	        // sum = sum + counter
-push argument 0
+push argument 0 
 push constant 1
 sub
 pop argument 0      // counter--
