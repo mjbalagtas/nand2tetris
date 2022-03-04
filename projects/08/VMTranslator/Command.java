@@ -1,16 +1,10 @@
 public class Command {
     private String command;
     private CommandType commandType;
-    private int commandLine;
 
-    public Command(int commandLine,String command, CommandType commandType){
-        this.commandLine = commandLine;
+    public Command(String command, CommandType commandType){
         this.command = command;
         this.commandType = commandType;
-    }
-
-    public int getCommmandLine(){
-        return commandLine;
     }
 
     public String getCommand(){
@@ -39,5 +33,14 @@ public class Command {
             return Integer.valueOf(temp);
         }
         return -1;
+    }
+
+    public String getLabel(){
+        if(this.commandType == CommandType.C_LABEL || this.commandType == CommandType.C_IF 
+            || this.commandType == CommandType.C_GOTO){
+                String[] line = this.command.split(" ");
+                return line[1];
+        }
+        return "";
     }
 }

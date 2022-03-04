@@ -1,303 +1,415 @@
 import java.io.FileNotFoundException;
 import java.io.PrintWriter;
-import java.util.Map;
-import java.util.HashMap;
 
 public class CodeWriter {
     private PrintWriter writer;
-    private int sp, lcl, arg, thismem, thatmem, tempmem, staticmem;
-    private int[] spArr;
-    private int[] lclArr;
-    private int[] argArr;
-    private int[] thisArr;
-    private int[] thatArr;
-    private int[] tempArr;
-    private int[] staticArr;
-    private String[] memory;
-    private Map<String, Integer> labels;
-    private Logical logical;
-    private Access access;
+    private int eq;
+    private int gt;
+    private int lt;
 
     public CodeWriter(String fileName) throws FileNotFoundException{
         this.writer = new PrintWriter(fileName);
-        this.sp = 256; this.lcl = 300; this.arg = 400; this.thismem = 3000; this.thatmem = 3010; this.tempmem = 5; this.staticmem = 16;
-        this.memory = new String[]{ "LCL", "ARG", "THIS", "THAT", "5", "16"};
-        this.spArr = new int[44];
-        this.lclArr = new int[100];
-        this.argArr = new int[2600];
-        this.thisArr = new int[10];
-        this.thatArr = new int[10];
-        this.tempArr = new int[8];
-        this.staticArr = new int[239];
-        this.labels = new HashMap<>();
-        this.logical = new Logical(this.writer, spArr, sp);
-        this.access = new Access(this.writer, spArr, sp);
-
-        //new Init(this.writer);
-        this.argArr[0] = 3;
+        this.eq = 0;
+        this.gt = 0;
+        this.lt = 0;
     }
 
     public void writeArithmetic(String command){
         if(command.equals("add")){
-            this.logical.add();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
-
+            this.add();
         }else if(command.contains("sub")){
             this.writer.println("//sub command");
-            this.logical.subtract();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.subtract();
         }else if(command.contains("neg")){
             this.writer.println("//neg command");
-            this.logical.neg();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.neg();
         }else if(command.contains("eq")){
             this.writer.println("//eq command");
-            this.logical.eq();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.eq(this.eq);
+            this.eq++;
         }else if(command.contains("gt")){
             this.writer.println("//gt command");
-            this.logical.get();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.get(this.gt);
+            this.gt++;
         }else if(command.contains("lt")){
             this.writer.println("//lt command");
-            this.logical.lt();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.lt(this.lt);
+            this.lt++;
         }else if(command.contains("and")){
             this.writer.println("//and command");
-            this.logical.and();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.and();
         }else if(command.contains("or")){
             this.writer.println("//or command");
-            this.logical.or();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.or();
         }else if(command.contains("not")){
             this.writer.println("//not command");
-            this.logical.not();
-            this.sp = this.logical.getSp();
-            this.spArr = this.logical.getSpArr();
+            this.not();
         }
     }
 
     public void writePushPop(CommandType commandType, String segment, int index){
 
-        if(commandType == CommandType.C_PUSH && segment.equals("constant")){
-
-            this.access.pusher(index);
-        }else if(commandType == CommandType.C_PUSH){
+        if(commandType == CommandType.C_PUSH){
             if(segment.contains("local")){
-                this.access.pusher(this.lclArr, this.memory[0], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pusher( "LCL", index);
             }else if(segment.contains("arg")){
-                this.access.pusher(this.argArr, this.memory[1], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pusher( "ARG", index);
             }else if(segment.contains("this")){
-                this.access.pusher(this.thisArr, this.memory[2], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pusher( "THIS", index);
             }else if(segment.contains("that")){
-                this.access.pusher(this.thatArr, this.memory[3], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pusher( "THAT", index);
             }else if(segment.contains("temp")){
-                this.access.pusher(this.tempArr, this.memory[4], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pushTempStatic(5 + index);
             }else if(segment.contains("static")){
-                this.access.pusher(this.staticArr, this.memory[5], index);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.pushTempStatic( 16 + index);
             }else if(segment.contains("pointer")){
-                if(index == 0){
-                    this.access.pusher(this.memory[1], this.thismem);
-                    this.sp = this.access.getSp();
-                    this.spArr = this.access.getSpArr();
-                }else if(index == 1){
-                    this.access.pusher(this.memory[2], this.thatmem);
-                    this.sp = this.access.getSp();
-                    this.spArr = this.access.getSpArr();
-                }
+                this.pushPointer(index);
+            }else if(segment.contains("constant")){
+                this.pushConstant(index);
             }
         }
         else if (commandType == CommandType.C_POP){
             if(segment.contains("local")){
-                this.lclArr = this.access.popper(this.lclArr, index, this.lcl);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popper( "LCL", index);
             }else if(segment.contains("arg")){
-                this.argArr = this.access.popper(this.argArr, index, this.arg);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popper( "ARG", index);
             }else if(segment.contains("this")){
-                this.thisArr = this.access.popper(this.thisArr, index, this.thismem);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popper( "THIS", index);
             }else if(segment.contains("that")){
-                this.thatArr = this.access.popper(this.thatArr, index, this.thatmem);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popper( "THAT", index);
             }else if(segment.contains("temp")){
-                this.tempArr = this.access.popper(this.tempArr, index, this.tempmem);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popTempStatic(5 + index);
             }else if(segment.contains("static")){
-                this.staticArr = this.access.popper(this.staticArr, index, this.staticmem);
-                this.sp = this.access.getSp();
-                this.spArr = this.access.getSpArr();
+                this.popTempStatic(16 + index);
             }else if(segment.contains("pointer")){
-                if(index == 0){
-                    this.thismem = this.access.popper(this.thismem, memory[1]);
-                    this.sp = this.access.getSp();
-                    this.spArr = this.access.getSpArr();
-                }else if(index == 1){
-                    this.thatmem = this.access.popper(this.thatmem, memory[2]);
-                    this.sp = this.access.getSp();
-                    this.spArr = this.access.getSpArr();
-                }
+                this.popPointer(index);
             }
         }
     }
 
-    public void writeLabel(int commandLine, String labelName){
-        this.writer.println("//writeLabel command starts here");
-
-        this.labels.put(labelName.trim(), commandLine);
-        this.writer.print("(");
-        this.writer.print(labelName);
-        this.writer.println(")");
-
-        this.writer.println("//writeLabel command ends here");
+    public void writeLabel(String label){
+        this.writer.println("(" + label + ")");
     }
 
-    public void writeIf(String labelName){
-        this.writer.println("//writeIf command starts here");
 
-        // this.writer.print("@");
-        // this.writer.println(String.valueOf(argArr[0]));
-        // this.writer.println("D=A");
-        this.writer.print("@");
-        this.writer.println(String.valueOf(this.arg));
+    public void writeGoto(String label){
+        this.writer.println("@" + label);
+        this.writer.println("0;JMP");
+    }
+
+    public void WriteIf(String label){
+        this.popper("ARG", 0);
+        this.writer.println("@" + label);
+        this.writer.println("D;JNE");
+    }
+
+    public void add(){
+        this.writer.println("//add command");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
         this.writer.println("D=M");
 
-        this.writer.print("@");
-        this.writer.println(labelName);
-        this.writer.println("D;JNE");
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=D+M");
 
-        // this.writer.println("//writeIf command ends here");
-        // if(this.argArr[0] == 0){
-        //     return true;
-        // }else{
-        //     return false;
-        // }
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
     }
 
-    public void writeGoto(String labelName){
-        this.writer.println("//writeGoto command starts here");
+    public void subtract(){
+        this.writer.println("//sub command");
 
-        this.writer.print("@");
-        this.writer.println(String.valueOf(this.labels.get(labelName.trim())));
-        this.writer.print("\t");
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=D-M");
+        this.writer.println("D=-D");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void neg(){
+
+        this.writer.println("@0");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("M=-M");
+
+        this.writer.println("@0");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void eq(int eq){
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=D-M");
+
+        this.writer.println("@EQUAL$" + eq);
+        this.writer.println("D;JEQ");
+        this.writer.println("D=0");
+        this.writer.println("(SET_EQUAL$" + eq +")");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void get(int gt){
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=D-M");
+
+        this.writer.println("@GREATER$" + gt);
+        this.writer.println("D;JLT");
+        this.writer.println("D=0");
+        this.writer.println("(SET_GREATER$" + gt +")");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+    }
+
+    public void lt(int lt){
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=D-M");
+
+        this.writer.println("@LESSER$" + lt);
+        this.writer.println("D;JGT");
+        this.writer.println("D=0");
+        this.writer.println("(SET_LESSER$" + lt +")");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+    }
+
+    public void and(){
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("M=D&M");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void or(){
+
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("M=D|M");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void not(){
+        this.writer.println("@SP");
+        this.writer.println("M=M-1");
+        this.writer.println("A=M");
+        this.writer.println("M=!M");
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+    }
+
+    public void popper(String memory, int index){
+        setAddr(memory, index);
+        this.writer.println("@13");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("AM=M-1");
+        this.writer.println("D=M");
+
+        this.writer.println("@13");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+    }
+
+    public void popTempStatic(int location){
+
+        this.writer.println("@SP");
+        this.writer.println("AM=M-1");
+        this.writer.println("D=M");
+
+        this.writer.println("@" + location);
+        this.writer.println("M=D");
+    }
+
+    public void setAddr(String memory, int index){
+        this.writer.println("@" + memory);
+        this.writer.println("D=M");
+        this.writer.println("@" + index);
+        this.writer.println("AD=D+A");
+    }
+
+
+    public void pusher(String memory, int index){
+        //this.writer.println("@" + (this.memory.get(memory) + index));
+        setAddr(memory, index);
+        this.writer.println("A=D");
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+    }
+
+    public void pushTempStatic(int location){
+        this.writer.println("@" + location);
+        
+        
+        this.writer.println("D=M");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+    }
+
+    public void pushPointer(int index){
+        if(index == 0){
+            this.writer.println("@THIS");
+            this.writer.println("D=M");
+            this.writer.println("@SP");
+            this.writer.println("A=M");
+            this.writer.println("M=D");
+            this.writer.println("@SP");
+            this.writer.println("M=M+1");
+        }else if(index == 1){
+            this.writer.println("@THAT");
+            this.writer.println("D=M");
+            this.writer.println("@SP");
+            this.writer.println("A=M");
+            this.writer.println("M=D");
+            this.writer.println("@SP");
+            this.writer.println("M=M+1");
+        }
+    }
+
+    public void popPointer(int index){
+
+        if(index == 0){
+            this.writer.println("@SP");
+            this.writer.println("AM=M-1");
+            this.writer.println("D=M");
+            this.writer.println("@THIS");
+            this.writer.println("M=D");
+        }else if(index == 1){
+            this.writer.println("@SP");
+            this.writer.println("AM=M-1");
+            this.writer.println("D=M");
+            this.writer.println("@THAT");
+            this.writer.println("M=D");
+        }
+    }
+
+    public void pushConstant( int index){
+        this.writer.println("//push constant");
+        this.writer.println("@" + String.valueOf(index));
+        this.writer.println("D=A");
+
+        this.writer.println("@SP");
+        this.writer.println("A=M");
+        this.writer.println("M=D");
+
+        this.writer.println("@SP");
+        this.writer.println("M=M+1");
+
+    }
+
+    public void close(int eq){
+        this.writer.println("(END)");
+        this.writer.println("@END");
         this.writer.println("0;JMP");
-
-        this.writer.println("//writeGoto command ends here");
-    }
-
-
-
-    // public void popper(int[] memStack, int index, int partition){
-    //     this.writer.println("//pop command");
-
-    //     this.sp--;
-    //     memStack[index] = this.spArr[this.sp - 256];
-
-    //     if(this.spArr[this.sp - 256] < 0 ){
-    //         this.writer.println("D=-1");
-    //     }else{
-    //         this.writer.print("@");
-    //         this.writer.println(String.valueOf(this.spArr[this.sp - 256]));
-    //         this.writer.println("D=A");
-    //     }
-
-    //     int location = partition + index;
-    //     this.writer.print("@");
-    //     this.writer.println(String.valueOf(location));
-    //     this.writer.println("M=D");
-
-    //     this.writer.println("@0");
-    //     this.writer.println("M=M-1");
-
-    //     this.spArr[this.sp - 256] = 0;
-
-    //     this.writer.println("//pop command ends here");
-    // }
-
-    // public void pushConstant( int index){
-    //     this.writer.println("//push constant");
-    //     this.spArr[this.sp - 256] = index;
-
-    //     this.writer.print("@");
-    //     this.writer.println(String.valueOf(index));
-    //     this.writer.println("\nD=A");
-
-    //     this.writer.println("@0");
-    //     this.writer.println("A=M");
-    //     this.writer.println("M=D");
-
-    //     this.writer.println("@0");
-    //     this.writer.println("M=M+1");
-
-    //     this.sp++;
-
-    //     this.writer.println("//push constant ends here");
-    // }
-
-    public void close(){
+        for(int i = 0; i < this.eq; i++){
+            this.conditional("EQUAL", "SET_EQUAL",i);
+        }
+        for(int i = 0; i < this.gt; i++){
+            this.conditional("GREATER", "SET_GREATER",i);
+        }
+        for(int i = 0; i < this.lt; i++){
+            this.conditional("LESSER", "SET_LESSER",i);
+        }
         this.writer.close();
     }
 
-    public void test(){
-        this.writer.println("\nnot translated\n");
+    public void conditional(String label, String goTo,int eq){
+
+        //if equal
+        this.writer.println("(" + label +"$" + eq + ")");
+        this.writer.println("D=-1");
+        this.writer.println("@"+ goTo +"$" + eq);
+        this.writer.println("0;JMP");
     }
 
-    public void printArr(){
 
-        System.out.println("\n\nSP:RAM[256]");
-        for(int i = 0; i < 15; i++){
-            System.out.print(spArr[i] + "\t");
-        }
-        System.out.println("\n\nLCL:RAM[300]");
-        for(int i = 0; i < 15; i++){
-            System.out.print(lclArr[i] + "\t");
-        }
-        System.out.println("\n\nARG:RAM[400]");
-        for(int i = 0; i < 15; i++){
-            System.out.print(argArr[i] + "\t");
-        }
-        System.out.println("\n\nTHIS:RAM[3000]");
-        for(int i = 0; i < 10; i++){
-            System.out.print(thisArr[i] + "\t");
-        }
-        System.out.println("\n\nTHAT:RAM[3010]");
-        for(int i = 0; i < 10; i++){
-            System.out.print(thatArr[i] + "\t");
-        }
-        System.out.println("\n\nTEMP:RAM[5..12]");
-        for(int i = 0; i < 8; i++){
-            System.out.print(tempArr[i] + "\t");
-        }
-        System.out.println("\n\nSTATIC:RAM[16..255]");
-        for(int i = 0; i < 20; i++){
-            System.out.print(staticArr[i] + "\t");
-        }
-        System.out.println("\n\nSTACK POINTER: " + this.sp + "\tTHIS: " + this.thismem + "\tTHAT: " + this.thatmem + "\n\n");
-    }
+
 }
